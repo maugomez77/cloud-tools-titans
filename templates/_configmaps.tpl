@@ -29,6 +29,8 @@
     {{- $opaEnabled := eq (include "static.titan-mesh-helm-lib-chart.opaEnabled" $titanSideCars) "true" -}}
     {{- $ratelimitEnabled := eq (include "static.titan-mesh-helm-lib-chart.ratelimitEnabled" $titanSideCars) "true" -}}
     {{- $appName := include "titan-mesh-helm-lib-chart.app-name" . -}}
+    {{- $customTpls := $titanSideCars.customTpls }}
+    {{- $sideCars := $customTpls.sideCars }}
     {{- if $envoyEnabled }}
       {{- if $useDynamicConfiguration }}
         {{- if $generateConfigMap }}
@@ -97,6 +99,7 @@ data:
             {{- end }}
 {{ include "titan-mesh-helm-lib-chart.configs.envoy.cds" (dict "titanSideCars" $titanSideCars "appName" $appName "releaseNamespace" .Release.Namespace "chartName" .Chart.Name) | indent 2 }}
 {{ include "titan-mesh-helm-lib-chart.configs.envoy.lds" (dict "titanSideCars" $titanSideCars "appName" $appName "releaseNamespace" .Release.Namespace "chartName" .Chart.Name) | indent 2 }}
+
           {{- end }}
         {{- end }}
       {{- else }}
@@ -125,5 +128,24 @@ data:
         {{- end }}
       {{- end }}
     {{- end }}
+    {{- if $sideCars }}
+      {{- $hasConfigTpl := false -}}
+      {{- range $sideCars -}}
+        {{- if .configTpl -}}
+          {{- $hasConfigTpl = true -}}
+        {{- end -}}
+      {{- end -}}
+      {{- if $hasConfigTpl }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Release.Name }}-{{ printf "%s-titan-sidecar-configs" $appName }}
+data:
+        {{- range $sideCars -}}
+          {{- include .configTpl $ | nindent 2 }}
+        {{- end -}}     
+      {{- end }}
+    {{- end }} 
   {{- end }}
 {{- end }}
