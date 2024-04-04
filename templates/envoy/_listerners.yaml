@@ -127,7 +127,7 @@
                     key: {{ .name }}
           {{- if .value }}
                     value: {{ .value }}
-          {{- else .rawValue }}
+          {{- else if .rawValue }}
                     raw_value: {{ .rawValue }}
           {{- end }}
                   append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
@@ -147,7 +147,7 @@
                     key: {{ .name }}
           {{- if .value }}
                     value: {{ .value }}
-          {{- else .rawValue }}
+          {{- else if .rawValue }}
                     raw_value: {{ .rawValue }}
           {{- end }}
                   append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
@@ -241,7 +241,7 @@
                     key: {{ .name }}
           {{- if .value }}
                     value: {{ .value }}
-          {{- else .rawValue }}
+          {{- else if .rawValue }}
                     raw_value: {{ .rawValue }}
           {{- end }}
                   append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
@@ -261,7 +261,7 @@
                     key: {{ .name }}
           {{- if .value }}
                     value: {{ .value }}
-          {{- else .rawValue }}
+          {{- else if .rawValue }}
                     raw_value: {{ .rawValue }}
           {{- end }}
                   append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
