@@ -117,10 +117,49 @@
               name: {{ $appName }}-ingress
               internal_only_headers:
               - x-envoy-original-path
-              request_headers_to_add: []
               virtual_hosts:
               - domains: '*'
                 name: {{ $appName }}-ingress
+    {{- if $ingress.addRequestHeaders }}
+                request_headers_to_add:
+      {{- range $ingress.addRequestHeaders }}
+                - header:
+                    key: {{ .name }}
+          {{- if .value }}
+                    value: {{ .value }}
+          {{- else if .rawValue }}
+                    raw_value: {{ .rawValue }}
+          {{- end }}
+                  append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                  keep_empty_value: {{ .keepEmptyValue | default "false" }}
+      {{- end }}
+    {{- end }}
+    {{- if $ingress.removeRequestHeaders }}
+                request_headers_to_remove:
+      {{- range $ingress.removeRequestHeaders }}
+                - {{ . }}
+      {{- end }}
+    {{- end }}
+    {{- if $ingress.addResponseHeaders }}
+                response_headers_to_add:
+      {{- range $ingress.addResponseHeaders }}
+                - header:
+                    key: {{ .name }}
+          {{- if .value }}
+                    value: {{ .value }}
+          {{- else if .rawValue }}
+                    raw_value: {{ .rawValue }}
+          {{- end }}
+                  append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                  keep_empty_value: {{ .keepEmptyValue | default "false" }}
+      {{- end }}
+    {{- end }}
+    {{- if $ingress.removeResponseHeaders }}
+                response_headers_to_remove:
+      {{- range $ingress.removeResponseHeaders }}
+                - {{ . }}
+      {{- end }}
+    {{- end }}
     {{- include "titan-mesh-helm-lib-chart.envoy.metrics" (dict "requests" $ingress "clusters" $clusters "direction" "ingress") | nindent 14 }}
     {{- include "titan-mesh-helm-lib-chart.envoy.ratelimit-actions" (dict "ingress" $ingress "clusters" $clusters ) | nindent 14 }}
     {{- include "titan-mesh-helm-lib-chart.envoy.filter.routes" (dict "titanSideCars" $titanSideCars "direction" "ingress" "appName" $appName) }}
@@ -193,9 +232,49 @@
               internal_only_headers:
               - x-envoy-original-path
               - x-forwarded-for
-              request_headers_to_add: []
               virtual_hosts:
               - name: {{ $appName }}-egress
+    {{- if $egress.addRequestHeaders }}
+                request_headers_to_add:
+      {{- range $egress.addRequestHeaders }}
+                - header:
+                    key: {{ .name }}
+          {{- if .value }}
+                    value: {{ .value }}
+          {{- else if .rawValue }}
+                    raw_value: {{ .rawValue }}
+          {{- end }}
+                  append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                  keep_empty_value: {{ .keepEmptyValue | default "false" }}
+      {{- end }}
+    {{- end }}
+    {{- if $egress.removeRequestHeaders }}
+                request_headers_to_remove:
+      {{- range $egress.removeRequestHeaders }}
+                - {{ . }}
+      {{- end }}
+    {{- end }}
+    {{- if $egress.addResponseHeaders }}
+                response_headers_to_add:
+      {{- range $egress.addResponseHeaders }}
+                - header:
+                    key: {{ .name }}
+          {{- if .value }}
+                    value: {{ .value }}
+          {{- else if .rawValue }}
+                    raw_value: {{ .rawValue }}
+          {{- end }}
+                  append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                  keep_empty_value: {{ .keepEmptyValue | default "false" }}
+      {{- end }}
+    {{- end }}
+    {{- if $egress.removeResponseHeaders }}
+                response_headers_to_remove:
+      {{- range $egress.removeResponseHeaders }}
+                - {{ . }}
+      {{- end }}
+    {{- end }}
+
                 domains: '*'
     {{- include "titan-mesh-helm-lib-chart.envoy.metrics" (dict "requests" $egress "clusters" $clusters "direction" "egress") | nindent 14 }}
                 rate_limits: []

@@ -102,6 +102,46 @@
               {{- end -}}
             {{- end }}
                   route:
+            {{- if .addRequestHeaders }}
+                    request_headers_to_add:
+              {{- range .addRequestHeaders }}
+                    - header:
+                        key: {{ .name }}
+                  {{- if .value }}
+                        value: {{ .value }}
+                  {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                  {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+              {{- end }}
+            {{- end }}
+            {{- if .removeRequestHeaders }}
+                    request_headers_to_remove:
+              {{- range .removeRequestHeaders }}
+                    - {{ . }}
+              {{- end }}
+            {{- end }}
+            {{- if .addResponseHeaders }}
+                    response_headers_to_add:
+              {{- range .addResponseHeaders }}
+                    - header:
+                        key: {{ .name }}
+                  {{- if .value }}
+                        value: {{ .value }}
+                  {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                  {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+              {{- end }}
+            {{- end }}
+            {{- if .removeResponseHeaders }}
+                    response_headers_to_remove:
+              {{- range .removeResponseHeaders }}
+                    - {{ . }}
+              {{- end }}
+            {{- end }}
             {{- if hasKey $clusterRoute "prefixRewrite" }}
                     prefix_rewrite: {{ $clusterRoute.prefixRewrite | quote }}
             {{- else if $clusterRoute.regexRewrite }}
@@ -158,6 +198,46 @@
               {{- end -}}
             {{- end }}
                   route:
+            {{- if .addRequestHeaders }}
+                    request_headers_to_add:
+              {{- range .addRequestHeaders }}
+                    - header:
+                        key: {{ .name }}
+                  {{- if .value }}
+                        value: {{ .value }}
+                  {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                  {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+              {{- end }}
+            {{- end }}
+            {{- if .removeRequestHeaders }}
+                    request_headers_to_remove:
+              {{- range .removeRequestHeaders }}
+                    - {{ . }}
+              {{- end }}
+            {{- end }}
+            {{- if .addResponseHeaders }}
+                    response_headers_to_add:
+              {{- range .addResponseHeaders }}
+                    - header:
+                        key: {{ .name }}
+                  {{- if .value }}
+                        value: {{ .value }}
+                  {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                  {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+              {{- end }}
+            {{- end }}
+            {{- if .removeResponseHeaders }}
+                    response_headers_to_remove:
+              {{- range .removeResponseHeaders }}
+                    - {{ . }}
+              {{- end }}
+            {{- end }}
                     cluster: {{ $clusterName }} 
             {{- if hasKey $route "prefixRewrite" }}
                     prefix_rewrite: {{ $route.prefixRewrite | quote }}
@@ -226,6 +306,46 @@
                       inline_string: {{ ($cluster.directResponseMessage | default (printf "%s:No matching route" $appName)) | squote }}
     {{- else }}
                   route:
+            {{- if $cluster.addRequestHeaders }}
+                    request_headers_to_add:
+              {{- range $cluster.addRequestHeaders }}
+                    - header:
+                        key: {{ .name }}
+                  {{- if .value }}
+                        value: {{ .value }}
+                  {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                  {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+              {{- end }}
+            {{- end }}
+            {{- if $cluster.removeRequestHeaders }}
+                    request_headers_to_remove:
+              {{- range $cluster.removeRequestHeaders }}
+                    - {{ . }}
+              {{- end }}
+            {{- end }}
+            {{- if $cluster.addResponseHeaders }}
+                    response_headers_to_add:
+              {{- range $cluster.addResponseHeaders }}
+                    - header:
+                        key: {{ .name }}
+                  {{- if .value }}
+                        value: {{ .value }}
+                  {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                  {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+              {{- end }}
+            {{- end }}
+            {{- if $cluster.removeResponseHeaders }}
+                    response_headers_to_remove:
+              {{- range $cluster.removeResponseHeaders }}
+                    - {{ . }}
+              {{- end }}
+            {{- end }}
                     cluster: {{ $defaultBackend }}
                     retry_policy:
                       num_retries: {{ coalesce $retryPolicy.numRetries "1" }}
