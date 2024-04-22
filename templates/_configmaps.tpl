@@ -43,6 +43,8 @@ metadata:
 data:
 {{ include "titan-mesh-helm-lib-chart.configs.envoy.dmc" (dict "titanSideCars" $titanSideCars "appName" $appName "releaseNamespace" .Release.Namespace "chartName" .Chart.Name) | indent 2 }}
 {{ include "titan-mesh-helm-lib-chart.configs.envoy-sds" . | indent 2 }}
+{{ include "titan-mesh-helm-lib-chart.configs.envoy-sds-validation" . | indent 2 }}
+{{ include "titan-mesh-helm-lib-chart.configs.envoy-sds-validation-pub" . | indent 2 }}
             {{- if $opaEnabled }}
 {{ include "titan-mesh-helm-lib-chart.configs.opa" . | indent 2 }}
 {{ include "titan-mesh-helm-lib-chart.configs.opa-policy" . | indent 2 }}
@@ -82,6 +84,8 @@ metadata:
 data:
 {{ include "titan-mesh-helm-lib-chart.configs.envoy.dmc" (dict "titanSideCars" $titanSideCars "appName" $appName "releaseNamespace" .Release.Namespace "chartName" .Chart.Name) | indent 2 }}
 {{ include "titan-mesh-helm-lib-chart.configs.envoy-sds" . | indent 2 }}
+{{ include "titan-mesh-helm-lib-chart.configs.envoy-sds-validation" . | indent 2 }}
+{{ include "titan-mesh-helm-lib-chart.configs.envoy-sds-validation-pub" . | indent 2 }}
             {{- if $opaEnabled }}
 {{ include "titan-mesh-helm-lib-chart.configs.opa" . | indent 2 }}
 {{ include "titan-mesh-helm-lib-chart.configs.opa-policy" . | indent 2 }}
@@ -111,6 +115,8 @@ metadata:
 data:
 {{ include "titan-mesh-helm-lib-chart.configs.envoy" (dict "titanSideCars" $titanSideCars "appName" $appName "releaseNamespace" .Release.Namespace "chartName" .Chart.Name) | indent 2 }}
 {{ include "titan-mesh-helm-lib-chart.configs.envoy-sds" . | indent 2 }}
+{{ include "titan-mesh-helm-lib-chart.configs.envoy-sds-validation" . | indent 2 }}
+{{ include "titan-mesh-helm-lib-chart.configs.envoy-sds-validation-pub" . | indent 2 }}
         {{- if $opaEnabled }}
 {{ include "titan-mesh-helm-lib-chart.configs.opa" . | indent 2 }}
 {{ include "titan-mesh-helm-lib-chart.configs.opa-policy" . | indent 2 }}
