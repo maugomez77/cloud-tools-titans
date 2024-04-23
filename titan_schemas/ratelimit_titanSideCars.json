@@ -1,0 +1,109 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$id": "ratelimit_titanSideCars.json",
+    "description": "titanSideCars.ratelimit",
+    "type": "object",
+    "properties": {
+        "enabled": {
+            "type": "boolean"
+        },
+        "monitorByEnvoy": {
+            "type": "boolean"
+        },
+        "cpu": {
+            "type": "object"
+        },
+        "memory": {
+            "type": "object"
+        },
+        "ephemeralStorage": {
+            "type": "object"
+        },
+        "imageRegistry": {
+            "type": "string"
+        },
+        "ratelimitConfigPath": {
+            "type": "string"
+        },
+        "ratelimitConfigFileName": {
+            "type": "string"
+        },
+        "configVolumeMountPath": {
+            "type": "string"
+        },
+        "imageName": {
+            "type": "string"
+        },
+        "imageTag": {
+            "type": "string"
+        },
+
+        "runTimeRoot": {
+            "type": "string"
+        },
+        "runTimeSubDirectory": {
+            "type": "string"
+        },
+        "log": {
+            "type": "string"
+        },
+        "logLevel": {
+            "type": "string"
+        },
+        "redisPoolSize": {
+            "type": "number"
+        },
+        "redisUrl": {
+            "type": "string"
+        },
+        "redisUseTls": {
+            "type": "boolean"
+        },
+        "redisSocketType": {
+            "type": "string"
+        },
+        "redisAuth": {
+            "type": "string"
+        },
+        "userStatsD": {
+            "type": "boolean"
+        },
+        "statsdPort": {
+            "type": "number"
+        },
+        "statsdProtocol": {
+            "type": "string"
+        },
+        "statsdHost": {
+            "type": "string"
+        },
+        "nearLimitRatio": {
+            "type": "number"
+        },
+        "detailedMetricsMode": {
+            "type": "boolean"
+        },
+        "shadowMode": {
+            "type": "boolean"
+        },
+        "port": {
+            "type": "number"
+        },
+        "healthCheckPath": {
+            "type": "string"
+        },
+        "healthCheckPort": {
+            "type": "number"
+        },
+        "healthCheckScheme": {
+            "type": "string"
+        },
+        "livenessFailureThreshold": {
+            "type": "number"
+        },
+        "readinessFailureThreshold": {
+            "type": "number"
+        }
+    },
+    "additionalProperties": true
+}
