@@ -71,6 +71,12 @@ function preCheck {
       echo $readMeMsg
       exit 1
   fi
+  if ! command -v pajv &> /dev/null
+  then
+      echo "pajv is required, check github.com/json-schema-everywhere/pajv"
+      echo $readMeMsg
+      exit 1
+  fi
 
   if [ -z "$chartname" ] || [ -z "$chartver" ]
   then
@@ -354,7 +360,8 @@ function validateSchema {
   pajv -s ../titan_schemas/titanSideCars.json -r ../titan_schemas/cert.json -r ../titan_schemas/customTpls.json -r ../titan_schemas/egress.json -r ../titan_schemas/envoy.json -r ../titan_schemas/imageRegistry.json -r ../titan_schemas/ingress.json -r ../titan_schemas/integration.json -r ../titan_schemas/issuers.json -r ../titan_schemas/logs.json -r ../titan_schemas/opa.json -r ../titan_schemas/ratelimit_titanSideCars.json -r ../titan_schemas/validation.json -r ../titan_schemas/versionFunction.json -d values.yaml > tests/logs/schema_validation.log
   if [[ $? -ne 0 ]]
   then
-    echo "Failed at validateSchema step"
+    echo "Failed at validateSchema step, error:"
+    cat tests/logs/schema_validation.log
     exit 1
   fi
 }
