@@ -356,6 +356,9 @@ function validateSchema {
   if [[ $? -ne 0 ]]
   then
     echo "Failed at validateSchema step"
+    PWD
+    ls tests/logs
+    echo tests/logs/schema_validation.log
     exit 1
   fi
 }
