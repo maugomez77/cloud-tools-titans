@@ -2,5 +2,22 @@
     "$schema": "http://json-schema.org/draft-06/schema#",
     "$id": "ingress.json",
     "description": "titanSideCars.ingress",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "enrichment": {
+            "type": "object"
+        },
+        "tokenCheck": {
+            "type": "boolean"
+        },
+        "ratelimit": {
+            "$ref": "ratelimit_titanSideCars_ingress.json"
+        },
+        "routes": {
+            "type": "array",
+            "items": {
+                "$ref": "route_ingress.json"
+            }
+        }
+    }
 }

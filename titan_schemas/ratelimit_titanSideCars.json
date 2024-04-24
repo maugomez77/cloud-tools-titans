@@ -22,10 +22,10 @@
         "imageRegistry": {
             "type": "string"
         },
-        "ratelimitConfigPath": {
+        "configPath": {
             "type": "string"
         },
-        "ratelimitConfigFileName": {
+        "configFileName": {
             "type": "string"
         },
         "configVolumeMountPath": {
@@ -37,7 +37,6 @@
         "imageTag": {
             "type": "string"
         },
-
         "runTimeRoot": {
             "type": "string"
         },
@@ -51,13 +50,27 @@
             "type": "string"
         },
         "redisPoolSize": {
-            "type": "number"
+            "oneOf": [
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                }
+            ]
         },
         "redisUrl": {
             "type": "string"
         },
         "redisUseTls": {
-            "type": "boolean"
+            "oneOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "string"
+                }
+            ]
         },
         "redisSocketType": {
             "type": "string"
@@ -66,10 +79,24 @@
             "type": "string"
         },
         "userStatsD": {
-            "type": "boolean"
+            "oneOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "string"
+                }
+            ]
         },
         "statsdPort": {
-            "type": "number"
+            "oneOf": [
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                }
+            ]
         },
         "statsdProtocol": {
             "type": "string"
@@ -78,32 +105,60 @@
             "type": "string"
         },
         "nearLimitRatio": {
-            "type": "number"
+            "oneOf": [
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                }
+            ]
         },
         "detailedMetricsMode": {
-            "type": "boolean"
+            "oneOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "string"
+                }
+            ]
         },
         "shadowMode": {
-            "type": "boolean"
+            "oneOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "string"
+                }
+            ]
         },
         "port": {
-            "type": "number"
+            "oneOf": [
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string"
+                }
+            ]
         },
         "healthCheckPath": {
             "type": "string"
         },
         "healthCheckPort": {
-            "type": "number"
+            "type": "string"
         },
         "healthCheckScheme": {
             "type": "string"
         },
         "livenessFailureThreshold": {
-            "type": "number"
+            "type": "string"
         },
         "readinessFailureThreshold": {
-            "type": "number"
+            "type": "string"
         }
     },
-    "additionalProperties": true
+    "additionalProperties": false
 }
