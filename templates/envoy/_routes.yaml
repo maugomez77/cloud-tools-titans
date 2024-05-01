@@ -29,39 +29,57 @@
   {{- if $gatewayEnable }}
     {{- range $cn, $cv := $clusters }}
       {{- if and (ne $cn "local-myapp") (ne $cn "remote-myapp") }}
-        {{- range $cv.routes }}
-          {{- $route := .route | default dict -}}
-          {{- $_ := set $route "cluster" $cn -}}
-          {{- if hasKey $cv "fixedSiteDomainName" -}}
-            {{- $match := .match | deepCopy }}
-            {{- $headers := $match.headers | default list -}}
-            {{- $addFixedSiteRoute := true -}}
-            {{- range $headers -}}
-              {{- if and (eq .key ":authority") (hasKey . "eq") -}}
-                {{- if not (contains $cv.fixedSiteDomainName .eq) -}}
-                  {{- $addFixedSiteRoute = false -}}
-                {{- end -}}
-              {{- end }}
+        {{- $includeIt := true }}
+        {{- if eq $direction "egress" }}
+          {{- $egressRoutes := $egress.routes }}
+          {{- $foundCluster := false -}}
+          {{- range $egressRoutes -}}
+            {{- $route := .route -}}
+            {{- if $route.cluster -}}
+              {{- if eq $route.cluster $cn -}}
+                {{- $foundCluster = true -}}
+              {{- end -}}
             {{- end -}}
-            {{- if $addFixedSiteRoute -}}
-              {{- $headers = append $headers (dict "key" ":authority" "ew" $cv.fixedSiteDomainName) }}
-              {{- $_ := set $match "headers" $headers }}
-              {{- $routes = append $routes (dict "match" $match "route" $route "ratelimit" .ratelimit) }}
-            {{- end -}}
-          {{- else if not (hasKey $cv "weightedClusterId") }}
-            {{- $match := .match }}
-            {{- $routes = append $routes (dict "match" $match "route" $route "ratelimit" .ratelimit) }}
           {{- end }}
+          {{- if not $foundCluster -}}
+            {{- $includeIt = false -}}
+          {{- end -}}
         {{- end }}
-        {{- if hasKey $cv "weightedClusterId" }}
-          {{- if hasKey $weightedClustersRoutes $cv.weightedClusterId -}}
-            {{- $wr := get $weightedClustersRoutes $cv.weightedClusterId }}
-            {{- $wrList := $wr.weightedClusters }}
-            {{- $wrList = append $wrList (dict "name" $cn "weight" $cv.weight) }}
-            {{- $_ := set $wr "weightedClusters" $wrList }}
-            {{- $_ := set $weightedClustersRoutes $cv.weightedClusterId $wr }}
-          {{- else }}
-            {{- $_ := set $weightedClustersRoutes $cv.weightedClusterId (dict "routes" $cv.routes "weightedClusters" (list (dict "name" $cn "weight" $cv.weight))) }}
+        {{- if $includeIt }}
+          {{- range $cv.routes }}
+            {{- $route := .route | default dict -}}
+            {{- $_ := set $route "cluster" $cn -}}
+            {{- if hasKey $cv "fixedSiteDomainName" -}}
+              {{- $match := .match | deepCopy }}
+              {{- $headers := $match.headers | default list -}}
+              {{- $addFixedSiteRoute := true -}}
+              {{- range $headers -}}
+                {{- if and (eq .key ":authority") (hasKey . "eq") -}}
+                  {{- if not (contains $cv.fixedSiteDomainName .eq) -}}
+                    {{- $addFixedSiteRoute = false -}}
+                  {{- end -}}
+                {{- end }}
+              {{- end -}}
+              {{- if $addFixedSiteRoute -}}
+                {{- $headers = append $headers (dict "key" ":authority" "ew" $cv.fixedSiteDomainName) }}
+                {{- $_ := set $match "headers" $headers }}
+                {{- $routes = append $routes (dict "match" $match "route" $route "ratelimit" .ratelimit) }}
+              {{- end -}}
+            {{- else if not (hasKey $cv "weightedClusterId") }}
+              {{- $match := .match }}
+              {{- $routes = append $routes (dict "match" $match "route" $route "ratelimit" .ratelimit) }}
+            {{- end }}
+          {{- end }}
+          {{- if hasKey $cv "weightedClusterId" }}
+            {{- if hasKey $weightedClustersRoutes $cv.weightedClusterId -}}
+              {{- $wr := get $weightedClustersRoutes $cv.weightedClusterId }}
+              {{- $wrList := $wr.weightedClusters }}
+              {{- $wrList = append $wrList (dict "name" $cn "weight" $cv.weight) }}
+              {{- $_ := set $wr "weightedClusters" $wrList }}
+              {{- $_ := set $weightedClustersRoutes $cv.weightedClusterId $wr }}
+            {{- else }}
+              {{- $_ := set $weightedClustersRoutes $cv.weightedClusterId (dict "routes" $cv.routes "weightedClusters" (list (dict "name" $cn "weight" $cv.weight))) }}
+            {{- end }}
           {{- end }}
         {{- end }}
       {{- end }}
