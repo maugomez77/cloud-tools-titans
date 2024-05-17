@@ -75,6 +75,7 @@
                   {{- $canaryMatch := $match | deepCopy -}}
                   {{- $canaryRoute := $route | deepCopy -}}
                   {{- $_ := set $canaryRoute "cluster" (printf "%s.%s" ($cv.alias | default $cn) $clusterCanaryNamespace) -}}
+                  {{- $_ := set $canaryRoute "baseCluster" $cn -}}
                   {{- $canaryHeaders = append $canaryHeaders (dict "key" $canaryHeaderName "eq" $canaryHeaderValue) -}}
                   {{- $_ := set $canaryMatch "headers" $canaryHeaders -}}
                   {{- $routes = append $routes (dict "match" $canaryMatch "route" $canaryRoute "ratelimit" .ratelimit) }}
@@ -90,6 +91,7 @@
                 {{- $canaryMatch := $match | deepCopy -}}
                 {{- $canaryRoute := $route | deepCopy -}}
                 {{- $_ := set $canaryRoute "cluster" (printf "%s.%s" ($cv.alias | default $cn) $clusterCanaryNamespace) -}}
+                {{- $_ := set $canaryRoute "baseCluster" $cn -}}
                 {{- $canaryHeaders = append $canaryHeaders (dict "key" $canaryHeaderName "eq" $canaryHeaderValue) -}}
                 {{- $_ := set $canaryMatch "headers" $canaryHeaders -}}
                 {{- $routes = append $routes (dict "match" $canaryMatch "route" $canaryRoute "ratelimit" .ratelimit) }}
@@ -169,6 +171,7 @@
     {{- $route := .route }}
     {{- if or $route .redirect .directResponse $ingressRoutesFromLocalMyapp }}
       {{- $clusterName := $route.cluster | default "" }}
+      {{- $lookupClusterName := ternary $route.baseCluster ($route.cluster | default "") (hasKey $route "baseCluster") }}
       {{- if and (not (hasKey $route "weightedClusters")) (eq $clusterName "") }}
         {{- if eq $direction "ingress" }}
           {{- if $route }}
@@ -182,7 +185,7 @@
           {{- fail "egress route requires cluster name"}}
         {{- end }}
       {{- end }}
-      {{- $cluster := ternary (index $clusters $clusterName) .empty (ne $clusterName "") }}
+      {{- $cluster := ternary (index $clusters $lookupClusterName) .empty (ne $clusterName "") }}
       {{- $retryPolicy := mergeOverwrite ($cluster.retryPolicy | default $remoteMyApp.retryPolicy | default dict) ($route.retryPolicy | default dict) }}
       {{- if or $cluster .directResponse .redirect (hasKey $route "weightedClusters") }}
         {{- if not .match }}
