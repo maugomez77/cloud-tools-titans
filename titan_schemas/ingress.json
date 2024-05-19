@@ -4,14 +4,26 @@
     "description": "titanSideCars.ingress",
     "type": "object",
     "properties": {
+        "additionalRoutes": {
+            "type": "array",
+            "items": {
+                "$ref": "ingress_route.json"
+            }
+        },
+        "disableAudit": {
+            "type": "boolean"
+        },
+        "disableEnrich": {
+            "type": "boolean"
+        },
+        "disableRbac": {
+            "type": "boolean"
+        },
         "enabled": {
             "type": "boolean"
         },
         "enrichment": {
-            "type": "object"
-        },
-        "tokenCheck": {
-            "type": "boolean"
+            "$ref": "enrichment.json"
         },
         "ratelimit": {
             "$ref": "ratelimit_titanSideCars_ingress.json"
@@ -22,11 +34,11 @@
                 "$ref": "ingress_route.json"
             }
         },
-        "additionalRoutes": {
-            "type": "array",
-            "items": {
-                "$ref": "ingress_route.json"
-            }
+        "tokenCheck": {
+            "type": "boolean"
+        },
+        "workloadIdentity": {
+            "type": "object"
         }
     }
 }

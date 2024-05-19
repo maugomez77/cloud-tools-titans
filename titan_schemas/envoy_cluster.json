@@ -31,6 +31,28 @@
                 "directResponseMessage": {
                     "type": "string"
                 },
+                "gateway": {
+                    "type": "object",
+                    "properties": {
+                        "defaultBackend": {
+                            "type": "string"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "port": {
+                            "oneOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string",
+                                    "pattern": "^[0-9]+$"
+                                }
+                            ]
+                        }
+                    }
+                },
                 "healthChecks": {
                     "type": "object",
                     "properties": {
@@ -46,7 +68,7 @@
                         },
                         {
                             "type": "string",
-                            "pattern": "^\"[0-9]+\"$"
+                            "pattern": "^[0-9]+$"
                         }
                     ]
                 },
@@ -87,8 +109,10 @@
                     "routes"
                 ]
             }
-        },
-        "remote-myapp": {
+        }
+    },
+    "patternProperties": {
+        "^(?!local-myapp$)[a-zA-Z_-]+": {
             "type": "object",
             "properties": {
                 "address": {
@@ -116,7 +140,7 @@
                         },
                         {
                             "type": "string",
-                            "pattern": "^\"[0-9]+\"$"
+                            "pattern": "^[0-9]+$"
                         }
                     ]
                 },

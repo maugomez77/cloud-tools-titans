@@ -2,5 +2,32 @@
     "$schema": "http://json-schema.org/draft-06/schema#",
     "$id": "egress.json",
     "description": "titanSideCars.egress",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "disableAudit": {
+            "type": "boolean"
+        },
+        "disableEnrich": {
+            "type": "boolean"
+        },
+        "enabled": {
+            "type": "boolean"
+        },
+        "enrichment": {
+            "$ref": "enrichment.json"
+        },
+        "routes": {
+            "type": "array",
+            "items": {
+                "$ref": "egress_route.json"
+            }
+        },
+        "tokenCheck": {
+            "type": "boolean"
+        },
+        "workloadIdentity": {
+            "type": "object"
+        }
+    },
+    "additionalProperties": false
 }

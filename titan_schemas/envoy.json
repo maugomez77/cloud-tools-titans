@@ -11,7 +11,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },
@@ -37,7 +37,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },
@@ -48,7 +48,7 @@
             "type": "object"
         },
         "enrichfilter": {
-            "type": "object"
+            "$ref": "envoy_enrichfilter.json"
         },
         "env": {
             "type": "object"
@@ -90,7 +90,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },
@@ -101,7 +101,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },
@@ -156,7 +156,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },
@@ -167,7 +167,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },
@@ -187,7 +187,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },
@@ -198,7 +198,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },
@@ -209,7 +209,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },
@@ -223,7 +223,7 @@
                 },
                 {
                     "type": "string",
-                    "pattern": "^\"[0-9]+\"$"
+                    "pattern": "^[0-9]+$"
                 }
             ]
         },

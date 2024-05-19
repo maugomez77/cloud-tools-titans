@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$id": "route_route.json",
+    "description": "titanSideCars.[ingress|egress].routes.route",
+    "type": "object",
+    "properties": {
+        "autoHostRewrite": {
+            "type": "string"
+        },
+        "cluster": {
+            "type": "string"
+        },
+        "disableFilters": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "_comment": "not sure about this"
+            }
+        },
+        "prefixRewrite": {
+            "type": "string"
+        },
+        "regexRewrite": {
+            "type": "object",
+            "properties": {
+                "pattern": {
+                    "type": "string"
+                },
+                "substitution": {
+                    "type": "string"
+                }
+            }
+        },
+        "timeout": {
+            "type": "string"
+        },
+        "weightedClusters": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "weight": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [ "name", "weight" ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "anyOf": [
+        {"required": ["autoHostRewrite"]},
+        {"required": ["cluster"]},
+        {"required": ["disableFilters"]},
+        {"required": ["prefixRewrite"]},
+        {"required": ["regexRewrite"]},
+        {"required": ["timeout"]},
+        {"required": ["weightedClusters"]}
+    ],
+    "allOf": [
+        {
+            "not": {
+                "required": ["cluster", "p7"]
+            }
+        },
+        {
+            "not": {
+                "required": ["prefixRewrite", "regexRewrite"]
+            }
+        }
+    ]
+}

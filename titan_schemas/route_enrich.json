@@ -2,5 +2,29 @@
     "$schema": "http://json-schema.org/draft-06/schema#",
     "$id": "route_enrich.json",
     "description": "titanSideCars.ingress.route.enrich or titanSideCars.egress.route.enrich",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "enabled": {
+            "type": "boolean"
+        },
+        "actions": {
+            "type": "array",
+            "items": {
+                "$ref": "enrich_action.json"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "anyOf": [
+        {
+            "required": [
+                "enabled"
+            ]
+        },
+        {
+            "required": [
+                "actions"
+            ]
+        }
+    ]
 }
