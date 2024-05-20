@@ -176,6 +176,7 @@
         {{- if eq $direction "ingress" }}
           {{- if $route }}
             {{- $clusterName = "local-myapp" }}
+            {{- $lookupClusterName = $clusterName }}
           {{- else }}
             {{- $clusterName = "" }}
           {{- end }}
