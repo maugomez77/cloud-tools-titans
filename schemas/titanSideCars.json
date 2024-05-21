@@ -3,7 +3,7 @@
     "$id": "titanSideCars.json",
     "description": "titanSideCars configuration schema",
     "type": "object",
-    "title": "titanSideCars config schema",
+    "title": "TitanSideCars config schema",
     "properties": {
         "titanSideCars": {
             "type": "object",

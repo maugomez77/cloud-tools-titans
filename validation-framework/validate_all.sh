@@ -365,7 +365,7 @@ function validateSchema {
   local validationRootDir="$1"
   local dataFile="$2"
   local logFile="$3"
-  local schemaDir="$1/../titan_schemas"
+  local schemaDir="$1/../schemas"
   local extractTitanSideCarsTpl="$1/gomplate/extract_titanSideCars.tpl"
   local titanSideCarsOnlyYaml="$validationRootDir/tests/values.titanSideCarsOnly.yaml"
 

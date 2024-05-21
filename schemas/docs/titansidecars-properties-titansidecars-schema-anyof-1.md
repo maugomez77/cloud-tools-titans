@@ -1,4 +1,4 @@
-# Untitled undefined type in titanSideCars config schema Schema
+# Untitled undefined type in TitanSideCars config schema Schema
 
 ```txt
 titanSideCars.json#/properties/titanSideCars/anyOf/1

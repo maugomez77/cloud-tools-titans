@@ -2,6 +2,8 @@
 
 ## Top-level Schemas
 
+* [TitanSideCars config schema](./titansidecars.md "titanSideCars configuration schema") – `titanSideCars.json`
+
 * [cert config schema](./cert.md "titanSideCars") – `cert.json`
 
 * [customer templates config schema](./customtpls.md "titanSideCars") – `customTpls.json`
@@ -69,8 +71,6 @@
 * [route rbac police rule config schema](./route_rbac_policy_rule.md "titanSideCars") – `route_rbac_policy_rule.json`
 
 * [route rbac policy config schema](./route_rbac_policy.md "titanSideCars") – `route_rbac_policy.json`
-
-* [titanSideCars config schema](./titansidecars.md "titanSideCars configuration schema") – `titanSideCars.json`
 
 * [titanSideCars ratelimit config schema](./ratelimit_titansidecars.md "titanSideCars") – `ratelimit_titanSideCars.json`
 

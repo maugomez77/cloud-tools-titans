@@ -5,7 +5,7 @@ docs/
 tmp/
 .git/
 scripts/
-titan_schemas/
+schemas/
 titan-mesh-helm-lib-chart-*.tgz
 dockerfiles/
 validation-framework/
