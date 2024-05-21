@@ -3,6 +3,7 @@
     "$id": "envoy_enrichfilter.json",
     "description": "titanSideCars.envoy.enrichfilter",
     "type": "object",
+    "title": "envoy enrichfilter config schema",
     "properties": {
         "allowPrecompiled": {
             "oneOf": [

@@ -3,6 +3,7 @@
     "$id": "ingress.json",
     "description": "titanSideCars.ingress",
     "type": "object",
+    "title": "ingress config schema",
     "properties": {
         "additionalRoutes": {
             "type": "array",
@@ -30,6 +31,7 @@
         },
         "routes": {
             "type": "array",
+            "title": "List of ingress route",
             "items": {
                 "$ref": "ingress_route.json"
             }
@@ -38,7 +40,13 @@
             "type": "boolean"
         },
         "workloadIdentity": {
-            "type": "object"
+            "type": "object",
+            "title": "ingress workload identity config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         }
     }
 }

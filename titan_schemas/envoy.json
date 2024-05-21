@@ -3,6 +3,7 @@
     "$id": "envoy.json",
     "description": "titanSideCars.envoy",
     "type": "object",
+    "title": "envoy config schema",
     "properties": {
         "adminPort": {
             "oneOf": [
@@ -42,19 +43,43 @@
             ]
         },
         "cpu": {
-            "type": "object"
+            "type": "object",
+            "title": "envoy cpu config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "customResponsefilter": {
-            "type": "object"
+            "type": "object",
+            "title": "envoy custome response filter config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "enrichfilter": {
             "$ref": "envoy_enrichfilter.json"
         },
         "env": {
-            "type": "object"
+            "type": "object",
+            "title": "envoy environment config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "ephemeralStorage": {
-            "type": "object"
+            "type": "object",
+            "title": "envoy ephemeral storage config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "filtersFolder": {
             "type": "string"
@@ -106,16 +131,34 @@
             ]
         },
         "loadDynamicConfigurationFromGcs": {
-            "type": "object"
+            "type": "object",
+            "title": "envoy local dynamic configuration from GC config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "localCircuitBreakers": {
-            "type": "object"
+            "type": "object",
+            "title": "envoy local circuit breaker config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "logFolderPath": {
             "type": "string"
         },
         "memory": {
-            "type": "object"
+            "type": "object",
+            "title": "envoy memory config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "mergeSlashes": {
             "type": "string"
@@ -139,12 +182,17 @@
             "_comment": "TODO: identify if this should be enum"
         },
         "perRouteFilters": {
-            "type": "object",
-            "_comment": "TODO: identify if this should be array"
-        },
-        "ratelimit": {
-            "type": "object",
-            "_comment": "This property should not be configured under envoy"
+            "type": "array",
+            "title": "List of perRouteFilter",
+            "items": {
+                "type": "object",
+                "title": "envoy per route filter config schema",
+                "properties": {
+                    "This is a place holder, schema documentation is in process": {
+                        "type": "string"
+                    }
+                }
+            }
         },
         "ratelimitConfigPath": {
             "type": "string"
@@ -172,7 +220,13 @@
             ]
         },
         "remoteCircuitBreakers": {
-            "type": "object"
+            "type": "object",
+            "title": "envoy remote circuit breaker config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "secretsFolder": {
             "type": "string"
@@ -214,7 +268,13 @@
             ]
         },
         "statsConfigRaw": {
-            "type": "object"
+            "type": "object",
+            "title": "envoy stats raw config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "statsPort": {
             "oneOf": [
@@ -252,10 +312,5 @@
             "type": "boolean"
         }
     },
-    "additionalProperties": false,
-    "not": {
-        "required": [
-            "ratelimit"
-        ]
-    }
+    "additionalProperties": false
 }

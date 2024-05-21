@@ -3,6 +3,7 @@
     "$id": "enrich_action.json",
     "description": "[ingress|egress].enrichment.actions.action or [ingress|egress].routes.enrich.actions.action",
     "type": "object",
+    "title": "enrich action config schema",
     "properties": {
         "action": {
             "type": "string",
@@ -23,6 +24,7 @@
         },
         "match_headers": {
             "type": "array",
+            "title": "List of enrich action match header",
             "items": {
                 "$ref": "enrich_action_match_header.json"
             }

@@ -3,6 +3,7 @@
     "$id": "route_rbac_policy_rule.json",
     "description": "titanSideCars.ingress.route.rbac.policy.rule or titanSideCars.egress.route.rbac.policy.rule",
     "type": "object",
+    "title": "route rbac police rule config schema",
     "properties": {
         "inv": {
             "type": "boolean"

@@ -3,9 +3,11 @@
     "$id": "enrichment.json",
     "description": "titanSideCars.ingress.enrichment",
     "type": "object",
+    "title": "enrichment config schema",
     "properties": {
         "actions": {
             "type": "array",
+            "title": "List of enrichment action",
             "items": {
                 "$ref": "enrich_action.json"
             }

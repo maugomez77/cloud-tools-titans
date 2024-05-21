@@ -3,6 +3,7 @@
     "$id": "egress.json",
     "description": "titanSideCars.egress",
     "type": "object",
+    "title": "egress config schema",
     "properties": {
         "disableAudit": {
             "type": "boolean"
@@ -18,6 +19,7 @@
         },
         "routes": {
             "type": "array",
+            "title": "List of egress route",
             "items": {
                 "$ref": "egress_route.json"
             }
@@ -26,7 +28,13 @@
             "type": "boolean"
         },
         "workloadIdentity": {
-            "type": "object"
+            "type": "object",
+            "title": "egress workload identity config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         }
     },
     "additionalProperties": false

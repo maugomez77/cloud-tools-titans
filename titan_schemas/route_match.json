@@ -3,6 +3,7 @@
     "$id": "route_match.json",
     "description": "titanSideCars.[ingress|egress|envoy.cluster].route.match",
     "type": "object",
+    "title": "route match config schema",
     "properties": {
         "method": {
             "type": "string"
@@ -19,6 +20,7 @@
         },
         "headers": {
             "type": "array",
+            "title": "List of route match header",
             "items": {
                 "$ref": "route_match_header.json"
             }

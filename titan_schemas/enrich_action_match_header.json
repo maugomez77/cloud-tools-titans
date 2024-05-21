@@ -3,6 +3,7 @@
     "$id": "enrich_action_match_header.json",
     "description": "[ingress|egress].enrichment.actions.action.match_header or [ingress|egress].routes.enrich.actions.action.match_header",
     "type": "object",
+    "title": "enrich header match config schema",
     "properties": {
         "inv": {
             "type": "boolean"
@@ -30,10 +31,12 @@
             ]
         },
         "val": {
-            "type": "string"
+            "type": "string",
+            "description": "This should not be specified if pattern is 'ex' or 'exist'"
         },
         "value": {
-            "type": "string"
+            "type": "string",
+            "description": "This should not be specified if pattern is 'ex' or 'exist'"
         }
     },
     "additionalProperties": false,
@@ -89,36 +92,5 @@
                 }
             ]
         }
-    ],
-    "if": {
-        "properties": {
-            "pattern": {
-                "enum": ["ex", "exist"]
-            }
-        }
-    },
-    "then": {
-        "not": {
-            "anyOf": [
-                { "required": ["val"] },
-                { "required": ["value"] }
-            ]
-        }
-    },
-    "else": {
-        "oneOf": [
-            {
-                "required": ["val"],
-                "not": {
-                    "required": ["value"]
-                }
-            },
-            {
-                "required": ["value"],
-                "not": {
-                    "required": ["val"]
-                }
-            }
-        ]
-    }
+    ]
 }

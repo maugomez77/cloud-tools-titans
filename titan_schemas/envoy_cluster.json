@@ -3,18 +3,32 @@
     "$id": "envoy_cluster.json",
     "description": "titanSideCars.envoy.clusters.cluster",
     "type": "object",
+    "title": "envoy cluster config schema",
     "properties": {
         "local-myapp": {
             "type": "object",
+            "title": "local-myapp config schema",
             "properties": {
                 "address": {
                     "type": "string"
                 },
                 "addRequestHeaders": {
-                    "type": "object"
+                    "type": "object",
+                    "title": "local-myapp add request headers config schema",
+                    "properties": {
+                        "This is a place holder, schema documentation is in process": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "addResponseHeaders": {
-                    "type": "object"
+                    "type": "object",
+                    "title": "local-myapp add response headers config schema",
+                    "properties": {
+                        "This is a place holder, schema documentation is in process": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "directResponseCode": {
                     "oneOf": [
@@ -33,6 +47,7 @@
                 },
                 "gateway": {
                     "type": "object",
+                    "title": "gateway config schema",
                     "properties": {
                         "defaultBackend": {
                             "type": "string"
@@ -55,6 +70,7 @@
                 },
                 "healthChecks": {
                     "type": "object",
+                    "title": "healthChecks config schema",
                     "properties": {
                         "path": {
                             "type": "string"
@@ -76,24 +92,31 @@
                     "type": "string"
                 },
                 "removeRequestHeaders": {
-                    "type": "object"
+                    "type": "object",
+                    "title": "local-myapp remove request headers config schema",
+                    "properties": {
+                        "This is a place holder, schema documentation is in process": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "removeResponseHeaders": {
-                    "type": "object"
-                },
-                "ratelimit": {
                     "type": "object",
-                    "_comment": "Do not config ratelimit under envoy cluster, use ingress instead"
+                    "title": "local-myapp remove response headers config schema",
+                    "properties": {
+                        "This is a place holder, schema documentation is in process": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "retryPolicy": {
-                    "type": "object"
-                },
-                "routes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "envoy_cluster_route.json"
-                    },
-                    "_comment": "Do not config route under envoy local-myapp cluster, use ingress instead"
+                    "type": "object",
+                    "title": "local-myapp retry policy config schema",
+                    "properties": {
+                        "This is a place holder, schema documentation is in process": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "scheme": {
                     "type": "string"
@@ -102,33 +125,47 @@
                     "type": "string"
                 }
             },
-            "additionalProperties": false,
-            "not": {
-                "required": [
-                    "ratelimit",
-                    "routes"
-                ]
-            }
+            "additionalProperties": false
         }
     },
     "patternProperties": {
         "^(?!local-myapp$)[a-zA-Z_-]+": {
             "type": "object",
+            "title": "envoy cluster config schema (except local-myapp)",
             "properties": {
                 "address": {
                     "type": "string"
                 },
                 "healthChecks": {
                     "type": "object",
+                    "title": "cluster healthChecks config schema",
                     "properties": {
                         "startup": {
-                            "type": "object"
+                            "type": "object",
+                            "title": "healthChecks startup config schema",
+                            "properties": {
+                                "This is a place holder, schema documentation is in process": {
+                                    "type": "string"
+                                }
+                            }
                         },
                         "liveness": {
-                            "type": "object"
+                            "type": "object",
+                            "title": "healthChecks liveness config schema",
+                            "properties": {
+                                "This is a place holder, schema documentation is in process": {
+                                    "type": "string"
+                                }
+                            }
                         },
                         "readyness": {
-                            "type": "object"
+                            "type": "object",
+                            "title": "healthChecks readyness config schema",
+                            "properties": {
+                                "This is a place holder, schema documentation is in process": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     },
                     "additionalProperties": false
@@ -147,15 +184,18 @@
                 "path": {
                     "type": "string"
                 },
-                "ratelimit": {
-                    "type": "object",
-                    "_comment": "Do not config ratelimit under envoy remote-myapp cluster, only supported under ingress"
-                },
                 "retryPolicy": {
-                    "type": "object"
+                    "type": "object",
+                    "title": "cluster retry policy config schema",
+                    "properties": {
+                        "This is a place holder, schema documentation is in process": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "routes": {
                     "type": "array",
+                    "title": "cluster routes config schema",
                     "items": {
                         "$ref": "envoy_cluster_route.json"
                     }
@@ -169,12 +209,7 @@
                 }
             }
         },
-        "additionalProperties": false,
-        "not": {
-            "required": [
-                "ratelimit"
-            ]
-        }
+        "additionalProperties": false
     },
     "additionalProperties": false
 }

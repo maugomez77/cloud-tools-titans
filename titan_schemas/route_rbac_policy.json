@@ -3,6 +3,7 @@
     "$id": "route_rbac_policy.json",
     "description": "titanSideCars.ingress.route.rbac.policy or titanSideCars.egress.route.rbac.policy",
     "type": "object",
+    "title": "route rbac policy config schema",
     "properties": {
         "name": {
             "type": "string"
@@ -12,6 +13,7 @@
         },
         "rules": {
             "type": "array",
+            "title": "List of rbac policy rule",
             "items": {
                 "$ref": "route_rbac_policy_rule.json"
             }

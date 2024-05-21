@@ -3,6 +3,7 @@
     "$id": "ratelimit_titanSideCars.json",
     "description": "titanSideCars.ratelimit",
     "type": "object",
+    "title": "titanSideCars ratelimit config schema",
     "properties": {
         "enabled": {
             "type": "boolean"
@@ -11,13 +12,31 @@
             "type": "boolean"
         },
         "cpu": {
-            "type": "object"
+            "type": "object",
+            "title": "ratelimit cpu config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "memory": {
-            "type": "object"
+            "type": "object",
+            "title": "ratelimit memory config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "ephemeralStorage": {
-            "type": "object"
+            "type": "object",
+            "title": "ratelimit ephemeral storage config schema",
+            "properties": {
+                "This is a place holder, schema documentation is in process": {
+                    "type": "string"
+                }
+            }
         },
         "imageRegistry": {
             "type": "string"

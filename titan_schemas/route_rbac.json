@@ -3,12 +3,14 @@
     "$id": "route_rbac.json",
     "description": "titanSideCars.ingress.route.rbac or titanSideCars.egress.route.rbac",
     "type": "object",
+    "title": "route rbac config schema",
     "properties": {
         "enabled": {
             "type": "boolean"
         },
         "policies": {
             "type": "array",
+            "title": "List of rbac policy",
             "items": {
                 "$ref": "route_rbac_policy.json"
             }

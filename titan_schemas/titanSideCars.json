@@ -3,9 +3,11 @@
     "$id": "titanSideCars.json",
     "description": "titanSideCars configuration schema",
     "type": "object",
+    "title": "titanSideCars config schema",
     "properties": {
         "titanSideCars": {
             "type": "object",
+            "title": "titanSideCars schema",
             "properties": {
                 "ratelimit": {
                     "$ref": "ratelimit_titanSideCars.json"

@@ -3,6 +3,7 @@
     "$id": "ratelimit_match_condition.json",
     "description": "ratelimit match condition",
     "type": "object",
+    "title": "ratelimit match condition config schema",
     "properties": {
         "key": {
             "type": "string"

@@ -3,6 +3,7 @@
     "$id": "egress_route.json",
     "description": "titanSideCars.egress.route",
     "type": "object",
+    "title": "egress route config schema",
     "properties": {
         "audit": {
             "$ref": "route_audit.json",

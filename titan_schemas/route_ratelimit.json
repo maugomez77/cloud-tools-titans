@@ -3,6 +3,7 @@
     "$id": "route_ratelimit.json",
     "description": "route.ratelimit",
     "type": "object",
+    "title": "route ratelimit config schema",
     "properties": {
         "enabled": {
             "type": "boolean"
@@ -12,6 +13,7 @@
         },
         "actions": {
             "type": "array",
+            "title": "List of ratelimit action match",
             "items": {
                 "$ref": "ratelimit_action_match.json"
             }

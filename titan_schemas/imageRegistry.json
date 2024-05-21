@@ -2,5 +2,11 @@
     "$schema": "http://json-schema.org/draft-06/schema#",
     "$id": "imageRegistry.json",
     "description": "titanSideCars.imageRegistry",
-    "type": "object"
+    "type": "object",
+    "title": "imageRegistry config schema",
+    "properties": {
+        "This is a place holder, schema documentation is in process": {
+            "type": "string"
+        }
+    }
 }

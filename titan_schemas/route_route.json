@@ -3,6 +3,7 @@
     "$id": "route_route.json",
     "description": "titanSideCars.[ingress|egress].routes.route",
     "type": "object",
+    "title": "route config schema",
     "properties": {
         "autoHostRewrite": {
             "type": "string"
@@ -12,9 +13,9 @@
         },
         "disableFilters": {
             "type": "array",
+            "title": "List of filters to be disabled",
             "items": {
-                "type": "string",
-                "_comment": "not sure about this"
+                "type": "string"
             }
         },
         "prefixRewrite": {
@@ -22,6 +23,7 @@
         },
         "regexRewrite": {
             "type": "object",
+            "title": "route regexRewrite config schema",
             "properties": {
                 "pattern": {
                     "type": "string"
@@ -36,8 +38,10 @@
         },
         "weightedClusters": {
             "type": "array",
+            "title": "List of weightedCluster",
             "items": {
                 "type": "object",
+                "title": "route weightedCluster config schema",
                 "properties": {
                     "name": {
                         "type": "string"

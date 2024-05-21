@@ -3,21 +3,24 @@
     "$id": "ingress_route.json",
     "description": "titanSideCars.ingress.route",
     "type": "object",
+    "title": "ingress route config schema",
     "properties": {
         "audit": {
-            "$ref": "route_audit.json",
-            "_comment": "TODO: check wasm-filter"
+            "$ref": "route_audit.json"
         },
         "customResponse": {
             "type": "object",
+            "title": "ingress customer response config schema",
             "properties": {
                 "enabled": {
                     "type": "boolean"
                 },
                 "addHeaders": {
                     "type": "array",
+                    "title": "List of customerResponse addHeader",
                     "items": {
                         "type": "object",
+                        "title": "ingress add header config schema",
                         "properties": {
                             "name": {
                                 "type": "string"
@@ -32,6 +35,7 @@
         },
         "directResponse": {
             "type": "object",
+            "title": "ingress direct response config schema",
             "properties": {
                 "body": {
                     "type": "string"

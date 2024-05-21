@@ -3,9 +3,11 @@
     "$id": "ratelimit_action_match.json",
     "description": "ratelimit.action.match",
     "type": "object",
+    "title": "ratelimit action match config schema",
     "properties": {
         "match": {
             "type": "array",
+            "title": "List of ratelimit match condition",
             "items": {
                 "$ref": "ratelimit_match_condition.json"
             }

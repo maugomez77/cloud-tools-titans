@@ -3,6 +3,7 @@
     "$id": "route_audit.json",
     "description": "titanSideCars.ingress.route.audit or titanSideCars.egress.route.audit",
     "type": "object",
+    "title": "route audit config schema",
     "properties": {
         "enabled": {
             "type": "boolean"

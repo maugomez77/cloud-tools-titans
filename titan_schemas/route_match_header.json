@@ -3,6 +3,7 @@
     "$id": "route_match_header.json",
     "description": "titanSideCars.[ingress|egress].route.match.headers",
     "type": "object",
+    "title": "route match header config schema",
     "properties": {
         "key": {
             "type": "string",

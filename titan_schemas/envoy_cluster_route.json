@@ -3,6 +3,7 @@
     "$id": "envoy_cluster_route.json",
     "description": "titanSideCars.envoy.clusters.cluster.routes.route",
     "type": "object",
+    "title": "envoy cluster route config schema",
     "properties": {
         "match": {
             "$ref": "route_match.json"

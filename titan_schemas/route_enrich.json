@@ -3,12 +3,14 @@
     "$id": "route_enrich.json",
     "description": "titanSideCars.ingress.route.enrich or titanSideCars.egress.route.enrich",
     "type": "object",
+    "title": "route enrich config schema",
     "properties": {
         "enabled": {
             "type": "boolean"
         },
         "actions": {
             "type": "array",
+            "title": "List of enrich action",
             "items": {
                 "$ref": "enrich_action.json"
             }
