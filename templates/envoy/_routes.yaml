@@ -2,12 +2,23 @@
   {{- $titanSideCars := .titanSideCars }}
   {{- $appName := .appName -}}
   {{- $direction := .direction -}}
+  {{- $validation := $titanSideCars.validation }}
+  {{- $routingType := .routingType -}}
+  {{- $validationEnabled := false }}
+  {{- if $validation }}
+    {{- $validationEnabled = ternary $validation.enabled true (hasKey $validation "enabled") }}
+  {{- end }}
+  {{- $canary := $titanSideCars.canary -}}
+  {{- $canaryHeaderName := $canary.headerName | default "x-epmp-routing-hint" -}}
+  {{- $canaryHeaderValue := $canary.headerValue | default "canary" -}}
   {{- $ingress := $titanSideCars.ingress }}
   {{- $egress := $titanSideCars.egress }}
   {{- $envoy := $titanSideCars.envoy }}
   {{- $clusters := $envoy.clusters }}
+
   {{- $remoteMyApp := index $clusters "remote-myapp" }}
   {{- $localMyApp := index $clusters "local-myapp" }}
+  {{- $ingressRoutesFromLocalMyapp := false -}}
   {{- $gatewayEnable := false }}
   {{- $defaultBackend := "local-myapp" }}
   {{- if $localMyApp.gateway  -}}
@@ -16,14 +27,126 @@
       {{- $defaultBackend = ternary $localMyApp.gateway.defaultBackend "" (hasKey $localMyApp.gateway "defaultBackend") }}
     {{- end }}
   {{- end }}
-                routes:
   {{- $routes := list }}
+  {{- $weightedClustersRoutes := dict -}}
   {{- if $gatewayEnable }}
     {{- range $cn, $cv := $clusters }}
       {{- if and (ne $cn "local-myapp") (ne $cn "remote-myapp") }}
-        {{- range $cv.routes }}
-          {{- $newcluster := dict "cluster" $cn }}
-          {{- $routes = append $routes (dict "match" .match "route" $newcluster) }}
+        {{- $includeIt := true }}
+        {{- $clusterCanaryNamespace := $cv.canaryNamespace | default "" -}}
+        {{- $clusterCanarySupport := $cv.supportCanary | default true -}}
+        {{- if eq $clusterCanaryNamespace "" -}}
+          {{- $clusterCanarySupport = false -}}
+        {{- end -}}
+        {{- if eq $direction "egress" }}
+          {{- $egressRoutes := $egress.routes }}
+          {{- $foundCluster := false -}}
+          {{- range $egressRoutes -}}
+            {{- $route := .route -}}
+            {{- if $route.cluster -}}
+              {{- if eq $route.cluster $cn -}}
+                {{- $foundCluster = true -}}
+              {{- end -}}
+            {{- end -}}
+          {{- end }}
+          {{- if not $foundCluster -}}
+            {{- $includeIt = false -}}
+          {{- end -}}
+        {{- end }}
+        {{- if $includeIt }}
+          {{- range $cv.routes }}
+            {{- $route := .route | default dict -}}
+            {{- $_ := set $route "cluster" $cn -}}
+            {{- if hasKey $cv "fixedSiteDomainName" -}}
+              {{- $match := .match | deepCopy }}
+              {{- $headers := $match.headers | default list -}}
+              {{- $addFixedSiteRoute := true -}}
+              {{- range $headers -}}
+                {{- if and (eq .key ":authority") (hasKey . "eq") -}}
+                  {{- if not (contains $cv.fixedSiteDomainName .eq) -}}
+                    {{- $addFixedSiteRoute = false -}}
+                  {{- end -}}
+                {{- end }}
+              {{- end -}}
+              {{- if $addFixedSiteRoute -}}
+                {{- $headers = append $headers (dict "key" ":authority" "ew" $cv.fixedSiteDomainName) }}
+                {{- if $clusterCanarySupport }}
+                  {{- $canaryHeaders := $headers | deepCopy -}}
+                  {{- $canaryMatch := $match | deepCopy -}}
+                  {{- $canaryRoute := $route | deepCopy -}}
+                  {{- $_ := set $canaryRoute "cluster" (printf "%s.%s" ($cv.alias | default $cn) $clusterCanaryNamespace) -}}
+                  {{- $_ := set $canaryRoute "baseCluster" $cn -}}
+                  {{- $canaryHeaders = append $canaryHeaders (dict "key" $canaryHeaderName "eq" $canaryHeaderValue) -}}
+                  {{- $_ := set $canaryMatch "headers" $canaryHeaders -}}
+                  {{- $routes = append $routes (dict "match" $canaryMatch "route" $canaryRoute "ratelimit" .ratelimit) }}
+                {{- end }}
+                {{- $_ := set $match "headers" $headers }}
+                {{- $routes = append $routes (dict "match" $match "route" $route "ratelimit" .ratelimit) }}
+              {{- end -}}
+            {{- else if not (hasKey $cv "weightedClusterId") }}
+              {{- $match := .match }}
+              {{- $headers := $match.headers | default list -}}
+              {{- if $clusterCanarySupport }}
+                {{- $canaryHeaders := $headers | deepCopy -}}
+                {{- $canaryMatch := $match | deepCopy -}}
+                {{- $canaryRoute := $route | deepCopy -}}
+                {{- $_ := set $canaryRoute "cluster" (printf "%s.%s" ($cv.alias | default $cn) $clusterCanaryNamespace) -}}
+                {{- $_ := set $canaryRoute "baseCluster" $cn -}}
+                {{- $canaryHeaders = append $canaryHeaders (dict "key" $canaryHeaderName "eq" $canaryHeaderValue) -}}
+                {{- $_ := set $canaryMatch "headers" $canaryHeaders -}}
+                {{- $routes = append $routes (dict "match" $canaryMatch "route" $canaryRoute "ratelimit" .ratelimit) }}
+              {{- end }}
+              {{- $routes = append $routes (dict "match" $match "route" $route "ratelimit" .ratelimit) }}
+            {{- end }}
+          {{- end }}
+          {{- if hasKey $cv "weightedClusterId" }}
+            {{- if hasKey $weightedClustersRoutes $cv.weightedClusterId -}}
+              {{- if $clusterCanarySupport }}
+                {{- $wr := get $weightedClustersRoutes (printf "%s-canary" $cv.weightedClusterId) }}
+                {{- $wrList := $wr.weightedClusters }}
+                {{- $wrList = append $wrList (dict "name" (printf "%s.%s" ($cv.alias | default $cn) $clusterCanaryNamespace) "weight" $cv.weight) }}
+                {{- $_ := set $wr "weightedClusters" $wrList }}
+                {{- $_ := set $weightedClustersRoutes (printf "%s-canary" $cv.weightedClusterId) $wr }}
+              {{- end }}
+              {{- $wr := get $weightedClustersRoutes $cv.weightedClusterId }}
+              {{- $wrList := $wr.weightedClusters }}
+              {{- $wrList = append $wrList (dict "name" $cn "weight" $cv.weight) }}
+              {{- $_ := set $wr "weightedClusters" $wrList }}
+              {{- $_ := set $weightedClustersRoutes $cv.weightedClusterId $wr }}
+            {{- else }}
+              {{- if $clusterCanarySupport }}
+                {{- $canaryRoutes := $cv.routes | deepCopy -}}
+                {{- range $canaryRoutes -}}
+                  {{- $match := .match -}}
+                  {{- $headers := $match.headers | default list -}}
+                  {{- $headers = append $headers (dict "key" $canaryHeaderName "eq" $canaryHeaderValue) -}}
+                  {{- $_ := set $match "headers" $headers -}}
+                {{- end -}}
+                {{- $_ := set $weightedClustersRoutes (printf "%s-canary" $cv.weightedClusterId) (dict "routes" $canaryRoutes "weightedClusters" (list (dict "name" (printf "%s.%s" ($cv.alias | default $cn) $clusterCanaryNamespace) "weight" $cv.weight))) }}
+              {{- end }}
+              {{- $_ := set $weightedClustersRoutes $cv.weightedClusterId (dict "routes" $cv.routes "weightedClusters" (list (dict "name" $cn "weight" $cv.weight))) }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- range $weightedClusterId, $weightClusterRoutesValue := $weightedClustersRoutes }}
+      {{- if hasSuffix "-canary" $weightedClusterId }}
+        {{- $weightedRoutes := $weightClusterRoutesValue.routes }}
+        {{- $weightedClusters := $weightClusterRoutesValue.weightedClusters }}
+        {{- range $weightedRoutes }}        
+          {{- $_ := set . "route" (dict "weightedClusters" $weightedClusters) }}
+          {{- $routes = append $routes . }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- range $weightedClusterId, $weightClusterRoutesValue := $weightedClustersRoutes }}
+      {{- if not (hasSuffix "-canary" $weightedClusterId) }}
+        {{- $weightedRoutes := $weightClusterRoutesValue.routes }}
+        {{- $weightedClusters := $weightClusterRoutesValue.weightedClusters }}
+        {{- range $weightedRoutes }}        
+          {{- $_ := set . "route" (dict "weightedClusters" $weightedClusters) }}
+          {{- $routes = append $routes . }}
         {{- end }}
       {{- end }}
     {{- end }}
@@ -31,111 +154,308 @@
     {{- $routes = ternary $ingress.routes $egress.routes (eq "ingress" $direction) }}
     {{- if and (eq "ingress" $direction) (not $routes) }}
       {{- if ternary $ingress.enabled true (hasKey $ingress "enabled") }}
-        {{ $routes = $localMyApp.routes }}
+        {{- $routes = $localMyApp.routes -}}
+        {{- $ingressRoutesFromLocalMyapp = true -}}
       {{- end }}
     {{- end }}
     {{- $additionalRoutes := ternary $ingress.additionalRoutes $egress.additionalRoutes (eq "ingress" $direction) }}
-    {{- if and $additionalRoutes $routes }}
-      {{- $routes = concat $additionalRoutes $routes }}
+    {{- if and $additionalRoutes }}
+      {{- if $routes }}
+        {{- $routes = concat $additionalRoutes $routes }}
+      {{- else }}
+        {{- $routes = $additionalRoutes }}
+      {{- end }}
     {{- end }} 
   {{- end }}
   {{- range $routes }}
     {{- $route := .route }}
-    {{- $clusterName := $route.cluster }}
-    {{- if not $clusterName }}
-      {{- if eq $direction "ingress" }}
-        {{- if $route }}
-          {{- $clusterName = "local-myapp" }}
-        {{- else }}
+    {{- if or $route .redirect .directResponse $ingressRoutesFromLocalMyapp }}
+      {{- $clusterName := $route.cluster | default "" }}
+      {{- $lookupClusterName := ternary $route.baseCluster ($route.cluster | default "") (hasKey $route "baseCluster") }}
+      {{- if and (not (hasKey $route "weightedClusters")) (eq $clusterName "") }}
+        {{- if eq $direction "ingress" }}
+          {{- if $route }}
+            {{- $clusterName = "local-myapp" }}
+            {{- $lookupClusterName = $clusterName }}
+          {{- else }}
+            {{- $clusterName = "" }}
+          {{- end }}
+        {{- else if or .directResponse .redirect }}
           {{- $clusterName = "" }}
+        {{- else }}
+          {{- fail "egress route requires cluster name"}}
         {{- end }}
-      {{- else if or .directResponse .redirect }}
-        {{- $clusterName = "" }}
-      {{- else }}
-        {{- fail "egress route requires cluster name"}}
       {{- end }}
-    {{- end }}
-    {{- $cluster := ternary (index $clusters $clusterName) .empty (ne $clusterName "") }}
-    {{- $retryPolicy := mergeOverwrite ($cluster.retryPolicy | default dict) ($route.retryPolicy | default dict) }}
-    {{- if or $cluster (or .directResponse .redirect) }}
-      {{- if not .match }}
-        {{- $retryOn := ternary "reset,connect-failure,refused-stream" "reset,connect-failure,refused-stream,gateway-error" (hasPrefix "local-" $clusterName) }}
-        {{- range $cluster.routes }}
-          {{- $clusterRoute := .route }}
+      {{- $cluster := ternary (index $clusters $lookupClusterName) .empty (ne $clusterName "") }}
+      {{- $retryPolicy := mergeOverwrite ($cluster.retryPolicy | default $remoteMyApp.retryPolicy | default dict) ($route.retryPolicy | default dict) }}
+      {{- if or $cluster .directResponse .redirect (hasKey $route "weightedClusters") }}
+        {{- if not .match }}
+          {{- $retryOn := ternary "reset,connect-failure,refused-stream,retriable-status-codes" "reset,connect-failure,refused-stream,gateway-error,retriable-status-codes" (hasPrefix "local-" $clusterName) }}   
+          {{- range $cluster.routes }}
+            {{- $clusterRoute := .route }}
+            {{- $match := .match }}
+            {{- $processRoute := false }}
+            {{- if eq $routingType "hostBasedRouting" }}
+              {{- range $match.headers }}
+                {{- if eq .key ":authority" }}
+                  {{- $processRoute = true }}
+                {{- end }}
+              {{- end }}
+            {{- else if eq $routingType "pathBasedRouting" }}
+              {{- $processRoute = true }}
+              {{- range $match.headers }}
+                {{- if eq .key ":authority" }}
+                  {{- $processRoute = false }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+            {{- if $processRoute }}
                 - match:
-          {{- include "titan-mesh-helm-lib-chart.envoy.matcher-route" (dict "route" .match "routing" true) | nindent 18 }}
+              {{- include "titan-mesh-helm-lib-chart.envoy.matcher-route" (dict "route" $match "routing" true) | nindent 18 }}
+              {{- $queryParameters := $match.queryParameters | default $match.query_parameters }}
+              {{- if $queryParameters }}
+                {{- include "titan-mesh-helm-lib-chart.envoy.matcher-query-parameters" (dict "queryParameters" $queryParameters) | nindent 18 }}
+              {{- end }}
+              {{- $hasPerRouteFilter := false -}}
+              {{- range $route.disableFilters }}
+                {{- $disabledFilter := index $envoy.perRouteFilters . -}}
+                {{- if $disabledFilter }}
+                  {{- $hasPerRouteFilter = true -}}
+                {{- end -}}
+              {{- end }}
+              {{- if $hasPerRouteFilter }}
+                  typed_per_filter_config:
+                {{- range $route.disableFilters }}
+                  {{- $disabledFilter := index $envoy.perRouteFilters . -}}
+                  {{- if $disabledFilter }}
+                    {{- printf "%s:" . | nindent 20 }}
+                    {{- printf "%s: type.googleapis.com/%s" (print "@type" | quote) $disabledFilter.type | nindent 22 }}
+                    {{- print "disabled: true" | nindent 22 }}
+                  {{- end }}
+                {{- end -}}
+              {{- end }}
                   route:
-          {{- if $clusterRoute.prefixRewrite }}
-                    prefix_rewrite: {{ $clusterRoute.prefixRewrite }}
-          {{- else if $clusterRoute.regexRewrite }}
+              {{- if .addRequestHeaders }}
+                    request_headers_to_add:
+                {{- range .addRequestHeaders }}
+                    - header:
+                        key: {{ .name }}
+                    {{- if .value }}
+                        value: {{ .value }}
+                    {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                    {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+                {{- end }}
+              {{- end }}
+              {{- if .removeRequestHeaders }}
+                    request_headers_to_remove:
+                {{- range .removeRequestHeaders }}
+                    - {{ . }}
+                {{- end }}
+              {{- end }}
+              {{- if .addResponseHeaders }}
+                    response_headers_to_add:
+                {{- range .addResponseHeaders }}
+                    - header:
+                        key: {{ .name }}
+                    {{- if .value }}
+                        value: {{ .value }}
+                    {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                    {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+                {{- end }}
+              {{- end }}
+              {{- if .removeResponseHeaders }}
+                    response_headers_to_remove:
+                {{- range .removeResponseHeaders }}
+                    - {{ . }}
+                {{- end }}
+              {{- end }}
+              {{- if hasKey $clusterRoute "prefixRewrite" }}
+                    prefix_rewrite: {{ $clusterRoute.prefixRewrite | quote }}
+              {{- else if $clusterRoute.regexRewrite }}
                     regex_rewrite:
                       pattern:
                         google_re2: {}
                         regex: {{ $clusterRoute.regexRewrite.pattern }}
                       substitution: {{ $clusterRoute.regexRewrite.substitution }}
-          {{- end }}
+              {{- end }}
                     cluster: {{ $route.cluster }}
-          {{- if or (eq $direction "egress") $cluster.autoHostRewrite $route.autoHostRewrite }}
+              {{- if or (eq $direction "egress") $cluster.autoHostRewrite $route.autoHostRewrite (and $validationEnabled $gatewayEnable) }}
                     auto_host_rewrite: true
-          {{- end }}
+              {{- end }}
                     retry_policy:
-                      num_retries: {{ coalesce $retryPolicy.numRetries "3" }}
+                      num_retries: {{ coalesce $retryPolicy.numRetries "1" }}
                       retry_on: {{ coalesce $retryPolicy.retryOn $retryOn }}
-                    timeout: {{ coalesce $route.timeout $clusterRoute.timeout (ternary $remoteMyApp.timeout $cluster.timeout (eq $direction "egress")) "15s" }}
-        {{- end  }}
-      {{- else }}
+              {{- if $retryPolicy.retriableStatusCode }}
+                      retriable_status_codes: 
+                {{- range $retryPolicy.retriableStatusCode }}
+                        - {{ . }}
+                {{- end }}
+              {{- end }}
+              {{- if $retryPolicy.hostSelectionRetryMaxAttempts }}
+                      host_selection_retry_max_attempts: {{ $retryPolicy.hostSelectionRetryMaxAttempts }}
+              {{- end }}
+                    timeout: {{ coalesce $route.timeout $clusterRoute.timeout (ternary $remoteMyApp.timeout $cluster.timeout (or $gatewayEnable (eq $direction "egress"))) "15s" }}
+            {{- end }}
+          {{- end  }}
+        {{- else }}
+          {{- $match := .match }}
+          {{- $processRoute := false }}
+          {{- if eq $routingType "hostBasedRouting" }}
+            {{- range $match.headers }}
+              {{- if eq .key ":authority" }}
+                {{- $processRoute = true }}
+              {{- end }}
+            {{- end }}
+          {{- else if eq $routingType "pathBasedRouting" }}
+            {{- $processRoute = true }}
+            {{- range $match.headers }}
+              {{- if eq .key ":authority" }}
+                {{- $processRoute = false }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if $processRoute }}
                 - match:
-          {{- include "titan-mesh-helm-lib-chart.envoy.matcher-route" (dict "route" .match "routing" true) | nindent 18 }}
-        {{- if ne $clusterName "" }}
-          {{- $retryOn := ternary "reset,connect-failure,refused-stream" "reset,connect-failure,refused-stream,gateway-error" (hasPrefix "local-" $clusterName) }}
+            {{- include "titan-mesh-helm-lib-chart.envoy.matcher-route" (dict "route"  $match "routing" true) | nindent 18 }}
+            {{- if or (ne $clusterName "") (hasKey $route "weightedClusters") }}
+              {{- $retryOn := ternary "reset,connect-failure,refused-stream,retriable-status-codes" "reset,connect-failure,refused-stream,gateway-error,retriable-status-codes" (hasPrefix "local-" $clusterName) }}
+              {{- $queryParameters := $match.queryParameters | default $match.query_parameters }}
+              {{- if $queryParameters }}
+                {{- include "titan-mesh-helm-lib-chart.envoy.matcher-query-parameters" (dict "queryParameters" $queryParameters) | nindent 18 }}
+              {{- end }}
+              {{- $hasPerRouteFilter := false -}}
+              {{- range $route.disableFilters }}
+                {{- $disabledFilter := index $envoy.perRouteFilters . -}}
+                {{- if $disabledFilter }}
+                  {{- $hasPerRouteFilter = true -}}
+                {{- end -}}
+              {{- end }}
+              {{- if $hasPerRouteFilter }}
+                  typed_per_filter_config:
+                {{- range $route.disableFilters }}
+                  {{- $disabledFilter := index $envoy.perRouteFilters . -}}
+                  {{- if $disabledFilter }}
+                    {{- printf "%s:" . | nindent 20 }}
+                    {{- printf "%s: type.googleapis.com/%s" (print "@type" | quote) $disabledFilter.type | nindent 22 }}
+                    {{- print "disabled: true" | nindent 22 }}
+                  {{- end }}
+                {{- end -}}
+              {{- end }}
                   route:
-                    cluster: {{ $clusterName }} 
-          {{- if $route.prefixRewrite }}
-                    prefix_rewrite: {{ $route.prefixRewrite }}
-          {{- else if $route.regexRewrite }}
+              {{- if .addRequestHeaders }}
+                    request_headers_to_add:
+                {{- range .addRequestHeaders }}
+                    - header:
+                        key: {{ .name }}
+                    {{- if .value }}
+                        value: {{ .value }}
+                    {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                    {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+                {{- end }}
+              {{- end }}
+              {{- if .removeRequestHeaders }}
+                    request_headers_to_remove:
+                {{- range .removeRequestHeaders }}
+                    - {{ . }}
+                {{- end }}
+              {{- end }}
+              {{- if .addResponseHeaders }}
+                    response_headers_to_add:
+                {{- range .addResponseHeaders }}
+                    - header:
+                        key: {{ .name }}
+                    {{- if .value }}
+                        value: {{ .value }}
+                    {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                    {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+                {{- end }}
+              {{- end }}
+              {{- if .removeResponseHeaders }}
+                    response_headers_to_remove:
+                {{- range .removeResponseHeaders }}
+                    - {{ . }}
+                {{- end }}
+              {{- end }}
+              {{- if ne $clusterName "" }}
+                    cluster: {{ $clusterName }}
+              {{- else if hasKey $route "weightedClusters" }}
+                {{- $weightedClusters := $route.weightedClusters }}
+                    weighted_clusters:
+                      clusters:
+                {{- range $weightedClusters }}
+                      - name: {{ .name }}
+                        weight: {{ .weight }}
+                {{- end }}
+              {{- end }}
+              {{- if hasKey $route "prefixRewrite" }}
+                    prefix_rewrite: {{ $route.prefixRewrite | quote }}
+              {{- else if $route.regexRewrite }}
                     regex_rewrite:
                       pattern:
                         google_re2: {}
                         regex: {{ $route.regexRewrite.pattern }}
                       substitution: {{ $route.regexRewrite.substitution }}
-          {{- end }}
-          {{- if or (eq $direction "egress") $cluster.autoHostRewrite $route.autoHostRewrite }}
+              {{- end }}
+              {{- if or (eq $direction "egress") (and (eq $direction "ingress") (not (hasPrefix "local-" $clusterName)) (not $gatewayEnable)) $cluster.autoHostRewrite $route.autoHostRewrite (and $validationEnabled $gatewayEnable) }}
                     auto_host_rewrite: true
-          {{- end }}
+              {{- end }}
                     retry_policy:
-                      num_retries: {{ coalesce $retryPolicy.numRetries "3" }}
+                      num_retries: {{ coalesce $retryPolicy.numRetries "1" }}
                       retry_on: {{ coalesce $retryPolicy.retryOn $retryOn }}
-                    timeout: {{ coalesce $route.timeout (ternary $remoteMyApp.timeout $cluster.timeout (eq $direction "egress")) "15s" }}
-          {{- if or $route.idleTimeout $cluster.idleTimeout }}
+              {{- if $retryPolicy.retriableStatusCode }}
+                      retriable_status_codes: 
+                {{- range $retryPolicy.retriableStatusCode }}
+                        - {{ . }}
+                {{- end }}
+              {{- end }}
+              {{- if $retryPolicy.hostSelectionRetryMaxAttempts }}
+                      host_selection_retry_max_attempts: {{ $retryPolicy.hostSelectionRetryMaxAttempts }}
+              {{- end }}
+                    timeout: {{ coalesce $route.timeout (ternary $remoteMyApp.timeout $cluster.timeout (or $gatewayEnable (eq $direction "egress"))) "15s" }}
+              {{- if or $route.idleTimeout $cluster.idleTimeout }}
                     idle_timeout: {{ coalesce $route.idleTimeout $cluster.idleTimeout }}
-          {{- end }}
-        {{- else if .directResponse }}
+              {{- end }}
+            {{- else if .directResponse }}
                   direct_response:
                     status: {{ .directResponse.status }}
-          {{- if .directResponse.body }}
+              {{- if .directResponse.body }}
                     body:
                       inline_string: {{ .directResponse.body | squote }}
-          {{- end }}
-        {{- else if .redirect }}
+              {{- end }}
+            {{- else if .redirect }}
                   redirect:
-          {{- if eq .redirect.action "regex_rewrite" }}
+              {{- if eq .redirect.action "regex_rewrite" }}
                     regex_rewrite:
                       pattern:
                         google_re2: 
                           max_program_size: {{ .redirect.maxlen }}
                         regex: {{ .redirect.regex | squote }}
                       substitution: {{ .redirect.value | squote }}
-          {{- else }}
+              {{- else }}
                     {{ .redirect.action }}: {{ .redirect.value }}
-          {{- end }}
-          {{- if .redirect.responseCode }}
+              {{- end }}
+              {{- if .redirect.responseCode }}
                     response_code: {{ .redirect.responseCode }}  
+              {{- end }}
+            {{- end }}
           {{- end }}
         {{- end }}
       {{- end }}
     {{- end }}
   {{- end }}
-  {{- if eq $direction "ingress" }}
+  {{- if and (eq $direction "ingress") (eq $routingType "pathBasedRouting") }}
     {{- $cluster := index $envoy.clusters "local-myapp" }}
     {{- $retryPolicy := $cluster.retryPolicy }}
                 - match:
@@ -147,10 +467,59 @@
                       inline_string: {{ ($cluster.directResponseMessage | default (printf "%s:No matching route" $appName)) | squote }}
     {{- else }}
                   route:
+            {{- if $cluster.addRequestHeaders }}
+                    request_headers_to_add:
+              {{- range $cluster.addRequestHeaders }}
+                    - header:
+                        key: {{ .name }}
+                  {{- if .value }}
+                        value: {{ .value }}
+                  {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                  {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+              {{- end }}
+            {{- end }}
+            {{- if $cluster.removeRequestHeaders }}
+                    request_headers_to_remove:
+              {{- range $cluster.removeRequestHeaders }}
+                    - {{ . }}
+              {{- end }}
+            {{- end }}
+            {{- if $cluster.addResponseHeaders }}
+                    response_headers_to_add:
+              {{- range $cluster.addResponseHeaders }}
+                    - header:
+                        key: {{ .name }}
+                  {{- if .value }}
+                        value: {{ .value }}
+                  {{- else if .rawValue }}
+                        raw_value: {{ .rawValue }}
+                  {{- end }}
+                      append_action: {{ .appendAction | default "ADD_IF_ABSENT" }}
+                      keep_empty_value: {{ .keepEmptyValue | default "false" }}
+              {{- end }}
+            {{- end }}
+            {{- if $cluster.removeResponseHeaders }}
+                    response_headers_to_remove:
+              {{- range $cluster.removeResponseHeaders }}
+                    - {{ . }}
+              {{- end }}
+            {{- end }}
                     cluster: {{ $defaultBackend }}
                     retry_policy:
-                      num_retries: {{ coalesce $retryPolicy.numRetries "3" }}
-                      retry_on: {{ coalesce $retryPolicy.retryOn "reset,connect-failure,refused-stream" }}
+                      num_retries: {{ coalesce $retryPolicy.numRetries "1" }}
+                      retry_on: {{ coalesce $retryPolicy.retryOn "reset,connect-failure,refused-stream,retriable-status-codes" }}
+          {{- if $retryPolicy.retriableStatusCode }}
+                      retriable_status_codes: 
+              {{- range $retryPolicy.retriableStatusCode }}
+                        - {{ . }}
+              {{- end }}
+          {{- end }}
+          {{- if $retryPolicy.hostSelectionRetryMaxAttempts }}
+                      host_selection_retry_max_attempts: {{ $retryPolicy.hostSelectionRetryMaxAttempts }}
+          {{- end }}
                     timeout: {{ coalesce $cluster.timeout "15s" }}
       {{- if $cluster.idleTimeout }}
                     idle_timeout: {{ $cluster.idleTimeout }}

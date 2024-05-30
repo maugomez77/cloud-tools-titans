@@ -7,6 +7,7 @@
   {{- $envoyEnabled := eq (include "static.titan-mesh-helm-lib-chart.envoyEnabled" $titanSideCars) "true" -}}
   {{- $opaEnabled := eq (include "static.titan-mesh-helm-lib-chart.opaEnabled" $titanSideCars) "true" -}}
   {{- $opa := $titanSideCars.opa -}}
+  {{- $opaMonitorByEnvoy := $opa.monitorByEnvoy -}}
   {{- $opaCPU := $opa.cpu -}}
   {{- $opaMemory := $opa.memory -}}
   {{- $opaStorage := $opa.ephemeralStorage -}}
@@ -24,22 +25,38 @@
     - "--diagnostic-addr=0.0.0.0:8282"
     - "--ignore=.*"
     - "/opa/policies"
-  livenessProbe:
+    {{- if not $opaMonitorByEnvoy }}
+  startupProbe:
     httpGet:
       path: {{ $opa.healthCheckPath | default "/health?plugins" }}
       port: {{ $opa.healthCheckPort | default "8282" }}
       scheme: {{ $opa.healthCheckScheme | default "HTTP" }}
     initialDelaySeconds: 5
-    failureThreshold: {{ $opa.livenessFailureThreshold | default "50" }}
-    periodSeconds: 10
+    failureThreshold: {{ $opa.startupFailureThreshold | default "5" }}
+    periodSeconds: 15
+  livenessProbe:
+    httpGet:
+      path: {{ $opa.healthCheckPath | default "/health?plugins" }}
+      port: {{ $opa.healthCheckPort | default "8282" }}
+      scheme: {{ $opa.healthCheckScheme | default "HTTP" }}
+    initialDelaySeconds: 1
+    failureThreshold: {{ $opa.livenessFailureThreshold | default "1" }}
+    periodSeconds: 15
   readinessProbe:
     httpGet:
-      path: /health?plugins
-      scheme: HTTP
-      port: 8282
-    initialDelaySeconds: 5
-    failureThreshold: {{ $opa.readinessFailureThreshold | default "100" }}
+      path: {{ $opa.healthCheckPath | default "/health?plugins" }}
+      scheme: {{ $opa.healthCheckScheme | default "HTTP" }}
+      port: {{ $opa.healthCheckPort | default "8282" }}
+    initialDelaySeconds: 1
+    failureThreshold: {{ $opa.readinessFailureThreshold | default "1" }}
     periodSeconds: 5
+    {{- end }}
+  lifecycle:
+    preStop:
+      exec:
+        command:
+          - sleep
+          - {{ $opa.preStopDuration | default "10" | quote }}
   resources:
     limits:
       cpu: {{ $opaCPU.limit | default "1" | quote }}

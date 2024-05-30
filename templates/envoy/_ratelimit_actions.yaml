@@ -2,34 +2,50 @@
   {{- $ingress := .ingress }}
   {{- $clusters := .clusters }}
   {{- $localMyApp := index $clusters "local-myapp" }}
-  {{- $routes := $ingress.routes }}
-  {{- if and $ingress (not $routes) }}
-    {{- if ternary $ingress.enabled true (hasKey $ingress "enabled") }}
-      {{ $routes = $localMyApp.routes }}
+  {{- $gateway := $localMyApp.gateway }}
+  {{- $gatewayEnable := $gateway.enabled }}
+  {{- $routes := list }}
+  {{- if $gatewayEnable }}
+    {{- range $cn, $cv := $clusters }}
+      {{- if and (ne $cn "local-myapp") (ne $cn "remote-myapp") }}
+        {{- range $cv.routes }}
+          {{- $newcluster := dict "cluster" $cn }}
+          {{- $routes = append $routes (dict "match" .match "route" $newcluster "ratelimit" .ratelimit) }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- else }}
+    {{- $routes = $ingress.routes }}
+    {{- if and $ingress (not $routes) }}
+      {{- if ternary $ingress.enabled true (hasKey $ingress "enabled") }}
+        {{ $routes = $localMyApp.routes }}
+      {{- end }}
+    {{- end }}
+    {{- $additionalRoutes := $ingress.additionalRoutes }}
+    {{- if $additionalRoutes }}
+      {{- if $routes }}
+        {{- $routes = concat $additionalRoutes $routes }}
+      {{- else }}
+        {{- $routes = $additionalRoutes }}
+      {{- end }}
     {{- end }}
   {{- end }}
-  {{- $additionalRoutes := $ingress.additionalRoutes }}
-  {{- if $additionalRoutes }}
-    {{- if $routes }}
-      {{- $routes = concat $additionalRoutes $routes }}
-    {{- else }}
-      {{- $routes = $additionalRoutes }}
-    {{- end }}
-  {{- end }} 
   {{- $ingressRatelimit := $ingress.ratelimit }}
   {{- $ratelimitEnabled := (ternary $ingressRatelimit.enabled "true" (hasKey $ingressRatelimit "enabled")) }}
   {{- $hashLen := 16 }}
   {{- $hasRatelimit := false }}
   {{- range $routes }}
     {{- $ratelimit := .ratelimit }}
-    {{- $hasRatelimit = or $hasRatelimit (ternary $ratelimit.enabled ($ratelimit | default false) (hasKey $ratelimit "enabled")) }}
+    {{- if $ratelimit -}}
+      {{- $hasRatelimit = or $hasRatelimit (ternary $ratelimit.enabled true (hasKey $ratelimit "enabled")) }}
+    {{- end -}}
   {{- end }}
   {{- if and $ratelimitEnabled $hasRatelimit }}
   rate_limits:
     {{- range $routes }}
       {{- $ratelimit := .ratelimit }}
+      {{- $rtName := regexReplaceAll "\\W+" ($ratelimit.name | default "keyval") "-" }}
       {{- if (ternary $ratelimit.enabled ($ratelimit | default false) (hasKey $ratelimit "enabled")) }}
-        {{- $l1hash := . | toString | sha1sum }}
         {{- $matches := .empty }}
         {{- if .match }}
           {{- $matches = list .match }}
@@ -43,6 +59,7 @@
           {{- $cluster := index $clusters $clusterName }}
           {{- $matches = $cluster.routes }}
         {{- end }}
+        {{- $l1hash := $matches | toString | sha1sum }}
         {{- $actions := .ratelimit.actions }}
         {{- range $actions }}
           {{- $action := . }}
@@ -50,7 +67,7 @@
           {{- range $matches }}
   - actions:
     - header_value_match:
-        descriptor_value: {{ printf "keyval_%s" ((printf "%s:%s:%s" $l1hash $l2hash (. | toString)) |  sha1sum | trunc $hashLen) }}
+        descriptor_value: {{ printf "%s_%s" $rtName ((printf "%s:%s:%s" $l1hash $l2hash (. | toString)) |  sha1sum | trunc $hashLen) }}
           {{- include "titan-mesh-helm-lib-chart.envoy.matcher-route" (dict "route" .) | nindent 6 }}
             {{- range $action.match }}
               {{- $descriptor := . }}
@@ -62,13 +79,13 @@
               {{- end }}
               {{- if or .eq .neq .sw .nsw .ew .new .co .nco .lk .nlk .pr .npr }}
     - header_value_match:
-        descriptor_value: {{ printf "keyval_%s" ((printf "%s:%s:%s" $l1hash $l2hash (. | toString)) |  sha1sum  | trunc $hashLen) }}
+        descriptor_value: {{ printf "%s_%s" $rtName ((printf "%s:%s:%s" $l1hash $l2hash (. | toString)) |  sha1sum  | trunc $hashLen) }}
                 {{ $headers := list (set $descriptor "key" $header) }}
         {{- include "titan-mesh-helm-lib-chart.envoy.matcher-headers" (dict "headers"  $headers) | nindent 6 }}
               {{- else }}
                 {{- if $testForNil }}
     - header_value_match:
-        descriptor_value: {{ printf "keyval_%s" ((printf "%s:%s:%s" $l1hash $l2hash (. | toString)) |  sha1sum  | trunc $hashLen) }}
+        descriptor_value: {{ printf "%s_%s" $rtName ((printf "%s:%s:%s" $l1hash $l2hash (. | toString)) |  sha1sum  | trunc $hashLen) }}
                   {{- $headers := list (dict "key" $header "neq" "nil") }}
         {{- include "titan-mesh-helm-lib-chart.envoy.matcher-headers" (dict "headers"  $headers) | nindent 6 }}
                 {{- end }}

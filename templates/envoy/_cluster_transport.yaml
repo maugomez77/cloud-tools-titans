@@ -1,0 +1,17 @@
+{{- define "titan-mesh-helm-lib-chart.envoy.filter.cluster-transport" }}
+  {{- $envoy := .envoy -}}
+  {{- $sni := .sni | default "" -}}
+  {{- $httpScheme := .httpScheme | default "HTTP" -}}
+  {{- if or (eq $httpScheme "HTTP2") (eq $httpScheme "HTTPS") }}
+transport_socket:
+  name: envoy.transport_sockets.tls
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+    common_tls_context:
+    {{- include "titan-mesh-helm-lib-chart.envoy.filter.tls-cert" (dict "envoy" $envoy) | nindent 6 }}
+    {{- include "titan-mesh-helm-lib-chart.envoy.filter.tls-cert-validation" (dict "envoy" $envoy "sni" $sni) | nindent 6 }}
+    {{- if and ($envoy.useSni | default false) (ne $sni "" )}}
+    sni: {{ $sni }}
+    {{- end }}
+  {{- end }}
+{{- end }}

@@ -1,3 +1,12 @@
 .DS_Store
-tmp
+tmp/
 titan-mesh-helm-lib-chart-*.tgz
+validation-framework/envoy/
+validation-framework/charts/
+validation-framework/tests/
+validation-framework/docker-compose.yaml
+validation-framework/values-test-clusters.yaml
+validation-framework/values.yaml
+validation-framework/secrets/credential.json
+validation-framework/icds-all-in-one-*.tgz
+validation-framework/test-values/
